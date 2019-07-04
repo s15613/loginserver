@@ -25,7 +25,7 @@ exports.register = (req, res) => {
                 bcrypt.hash(req.body.password, salt, function (err, hash) {
                     const newUser = new User({
                         email: req.body.email,
-                        usernam: req.body.username,
+                        username: req.body.username,
                         password: hash
                     })
 
@@ -50,12 +50,15 @@ exports.login = (req, res) => {
 					bcrypt.compare(req.body.password, user.password)
 					.then(isMatch => {
 						if (isMatch) {
-							const token = jwt.sign({ id: user._id }, process.env.SECRET, { expiresIn: '1d' }, function (err, token) {
-								return res.json({
-									success: true,
-									token: token
+							const token = jwt.sign({ id: user._id, username: user.username }, 
+													process.env.SECRET, 
+													{ expiresIn: '1d' }, 
+													function (err, token) {
+														return res.json({
+															success: true,
+															token: token
+														})
 								})
-							})
 						} else {
 							errors.password = 'Password is incorrect'
 							return res.status(404).json(errors)

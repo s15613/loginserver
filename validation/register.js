@@ -12,11 +12,11 @@ module.exports = function (data) {
 	}
 
 	if (Validator.isEmpty(data.username)) {
-		errors.login = 'Login field is required'
+		errors.username = 'Login field is required'
 	}
 
-	if (!Validator.isLength(data.username, { min: 4, max: 30 })) {
-		errors.login = 'Login must between 4 and 30 characters'
+	if (!Validator.isLength(data.username, { min: 4, max: 10 })) {
+		errors.username = 'Username must between 4 and 10 characters'
 	}
 
 	if (Validator.isEmpty(data.password)) {
