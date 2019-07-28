@@ -1,7 +1,6 @@
 const User = require('../models/User')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const passport = require('passport')
 
 const validateRegisterInput = require('../validation/register')
 const validateLoginInput = require('../validation/login')
@@ -30,7 +29,11 @@ exports.register = (req, res) => {
                     })
 
                     newUser.save()
-                        .then(newUser => res.json(newUser))
+                        .then(newUser => {
+							const user = newUser.toObject()
+							delete user.password
+							res.json(user)
+						})
                         .catch(err => console.log(err))
                 })
             })
@@ -69,4 +72,59 @@ exports.login = (req, res) => {
 					return res.status(404).json(errors)
 				}
 			})
+}
+
+exports.info = (req, res) => {
+	User.findById(req.params.id, '-password')
+			.then(user => {
+				if (user) {
+					return res.json(user)
+				} else {
+					return res.status(404).json({ msg: 'User not found'})
+				}
+			})
+			.catch(err => console.log(err))
+}
+
+exports.follow = (req, res) => {
+	User.findOneAndUpdate({
+		_id: req.user._id 
+	}, {
+		$push: { following: req.body.userId }
+	},
+	{ new: true })
+	.then(user => {
+		User.findOneAndUpdate({
+			_id: req.body.userId
+		}, {
+			$push: { followers: req.user._id }
+		}, { new: true})
+		.then(user => res.json({ userId: req.body.userId }))
+		.catch(err => console.log(err))
+	})
+	.catch(err => console.log(err))
+}
+
+exports.unfollow = (req, res) => {
+	User.findOneAndUpdate({
+		_id: req.user._id
+	}, {
+		$pull: { following: req.body.userId }
+	}, { new: true })
+	.then(user => {
+		User.findOneAndUpdate({
+			_id: req.body.userId
+		}, { 
+			$pull: { followers: req.user._id }
+		}, { new: true })
+		.then(user => res.json({ userId: req.body.userId }))
+		.catch(err => console.log(err))
+	})
+	.catch(err => console.log(err))
+}
+
+exports.search = (req, res) => {
+	User.find({ 'username': new RegExp(req.body.text, 'i')}, 'username')
+	.then(users => res.json(users))
+	.catch(err => res.status(404).json({ msg: 'User not found'}))
 }

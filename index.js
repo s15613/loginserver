@@ -6,7 +6,7 @@ const cors = require('cors')
 const passport = require('passport')
 
 const userRoutes = require('./routes/users')
-// const postRoutes = require('./routes/posts')
+const postRoutes = require('./routes/posts')
 
 // setup environment
 dotenv.config()
@@ -29,7 +29,7 @@ app.use(passport.initialize())
 require('./config/passport')(passport)
 
 app.use('/api/users', userRoutes)
-// app.use('/api/posts', postRoutes)
+app.use('/api/posts', postRoutes)
 
 // run app
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`))
